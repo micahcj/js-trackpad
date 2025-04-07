@@ -1,0 +1,12 @@
+.pad {
+	width: 20rem;
+	height: 15rem;
+	border: 2px solid black;
+}
+
+.details p {
+	font-weight: 800;
+	max-width: 50%;
+	/* display: grid;
+	grid-template-columns: repeat(2, fr); */
+}
