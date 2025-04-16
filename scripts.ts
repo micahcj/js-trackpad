@@ -28,7 +28,12 @@ function followCursorOn() {
 	}, 500);
 }
 
-function calculateDistance(x: number, y: number) {
+/**sleep timeout milliseconds then get then calculate the distance traveled
+ * @param x x-coordinate of cursor
+ * @param y y-coordinate of cursor
+ * @param timeout number of milliseconds until distance is calculated and command sent. Default 250 milliseconds
+ */
+function calculateDistance(x: number, y: number, timeout = 250) {
 	if (monitoring) {
 		//sleep 100 milliseconds then get the values
 		// console.log(x, y);
@@ -96,7 +101,7 @@ function calculateDistance(x: number, y: number) {
 				sendInput(result);
 				console.log("result", result);
 			}
-		}, 100);
+		}, timeout);
 		console.log(counter);
 
 		if (counter >= 5) {
