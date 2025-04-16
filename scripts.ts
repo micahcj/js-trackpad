@@ -23,10 +23,12 @@ function followCursorOn() {
 		yEle.textContent = cursorY;
 		drawOnCanvas(cursorX, cursorY);
 	});
-	monitoring = setInterval(calculateDistance, 100, cursorX, cursorY);
+	monitoring = setInterval(function () {
+		calculateDistance(cursorX, cursorY);
+	}, 500);
 }
 
-function calculateDistance(x, y) {
+function calculateDistance(x: number, y: number) {
 	if (monitoring) {
 		//sleep 100 milliseconds then get the values
 		// console.log(x, y);
@@ -47,20 +49,56 @@ function calculateDistance(x, y) {
 			resultEle!.textContent = `${(deltaX / width) * 100}% x ${
 				(deltaY / height) * 100
 			}%`;
-			if (deltaX / x > 0.2) {
+			// resultEle.innerHTML += "<br>";
+			resultEle.appendChild(document.createElement("br"));
+			const dX = document.createElement("p");
+			dX.textContent = `deltaX: ${deltaX}`;
+			const dY = document.createElement("p");
+			dY.textContent = `deltaY: ${deltaY}`;
+			const trackpadDimensions = Object(
+				trackpadEle.getBoundingClientRect()
+			);
+			const details = document.querySelector(".data");
+			details.replaceChildren();
+			details.appendChild(dX);
+			details.appendChild(dY);
+			const cursorXP = document.createElement("p");
+			cursorXP.textContent = "cursor X: " + cursorX;
+			const cursorYP = document.createElement("p");
+			cursorYP.textContent = "cursor Y: " + cursorY + "  y: " + y;
+			details.appendChild(cursorXP);
+			details.appendChild(cursorYP);
+			// 	trackpadDimensions.key.forEach((key) => {
+			console.log(details.childNodes.length);
+			for (const item in trackpadDimensions) {
+				const p = document.createElement("p");
+				p.textContent = item + " : " + trackpadDimensions[item];
+				details.appendChild(p);
+			}
+			let result: "left" | "right" | "up" | "down" | null;
+			if (deltaX / x > 0.1) {
 				resultEle!.textContent += " right > ";
+				result = "right";
 			}
-			if (deltaX / x < -0.2) {
+			if (deltaX / x < -0.1) {
 				resultEle!.textContent += " left > ";
+				result = "left";
 			}
-			if (deltaY / y > 0.2) {
+			if (deltaY / y > 0.1) {
 				resultEle!.textContent += " down > ";
+				result = "down";
 			}
-			if (deltaY / y < -0.2) {
+			if (deltaY / y < -0.1) {
 				resultEle!.textContent += " up > ";
+				result = "up";
+			}
+			if (result) {
+				sendInput(result);
+				console.log("result", result);
 			}
 		}, 100);
 		console.log(counter);
+
 		if (counter >= 5) {
 			console.log("counter hit 5. closing interval");
 			clearInterval(monitoring as number);
@@ -99,9 +137,21 @@ function drawOnCanvas(x, y) {
 	// ctx.globalCompositeOperation = "copy";
 	ctx.globalCompositeOperation = "source-over";
 	ctx.fillStyle = "red";
-	ctx.ellipse(x, y, 30, 30, 0, 0, 0);
-	// ctx.fillRect(x, y, 15, 7.5);
-	ctx.stroke();
-	// ctx.globalCompositeOperation = "destination-out";
+	// ctx.ellipse(x, y, 30, 30, 0, 0, 0);
+	ctx.fillRect(x, y, 15, 7.5);
+	// ctx.stroke();
+	ctx.globalCompositeOperation = "destination-out";
 	console.log("drew");
+}
+
+async function sendInput(cardinalInput: "left" | "right" | "up" | "down") {
+	const url = new URL("http://192.168.0.120:9099/remoteinput");
+	const formData = new FormData();
+	formData.append("remoteInput", cardinalInput);
+	const response = await fetch(url, {
+		body: formData,
+		method: "POST",
+	});
+	const data = await response.json();
+	console.log(data);
 }
